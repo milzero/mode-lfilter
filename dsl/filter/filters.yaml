@@ -1,29 +1,23 @@
 filterModel:
-  version: 0.0.1
-  namespace: "default"
-  desc: "这是一个测试"
-  filtes:
-    - filte:
-        desc: "这是一个测试"
-        function: "userPrix"
-        type:  "userType"
-        methon: "match"
-        items:
-            - item:
-                key: "123"
+    version: 0.0.1
+    namespace: "default"
+    desc: "这是一个测试"
+    filtes:
+        - desc: "这是一个测试"
+          function: "userPrix"
+          type: "userType"
+          method: "match"
+          items:
+              - key: "123"
                 value: "time"
-            - item:
-                key: "1234"
+              - key: "1234"
                 value: "times"
-    - filte:
-        desc: "这是一个测试"
-        function: "userPrix"
-        type:  "userType"
-        methon: "match"
-        items:
-            - item:
-                key: "123"
+        - desc: "这是一个测试"
+          function: "userPrix"
+          type: "userType"
+          method: "match"
+          items:
+              - key: "123"
                 value: "time"
-            - item:
-                key: "1234"
-                value: "times"            
+              - key: "1234"
+                value: "times"
