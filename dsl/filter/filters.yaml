@@ -2,20 +2,22 @@ filterModel:
     version: 0.0.1
     namespace: "default"
     desc: "这是一个测试"
-    filtes:
+    filters:
         - desc: "这是一个测试"
-          function: "userPrix"
-          type: "userType"
+          function: "userPix"
+          type: "useId"
           method: "match"
+          priority: 1
           items:
               - key: "123"
                 value: "time"
               - key: "1234"
                 value: "times"
         - desc: "这是一个测试"
-          function: "userPrix"
-          type: "userType"
+          function: "userPix"
+          type: "device"
           method: "match"
+          priority: 2
           items:
               - key: "123"
                 value: "time"

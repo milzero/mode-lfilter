@@ -2,8 +2,9 @@ package filter
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"sync"
+
+	"gopkg.in/yaml.v2"
 )
 
 type Type int
@@ -15,23 +16,25 @@ const (
 )
 
 type ModelContainer struct {
-	FilterModel Model `yaml:"filterModel" json:"filterModel" xml:"filterModel"`
+	FilterModel FilterModel `yaml:"filterModel" json:"filterModel" xml:"filterModel"`
 }
 type Items struct {
-	Key   string `yaml:"key" json:"key,omitempty" xml:"key"`
-	Value string `yaml:"value" json:"value,omitempty" xml:"value"`
+	Key   string `yaml:"key"`
+	Value string `yaml:"value"`
 }
 type Filters struct {
-	Desc     string  `yaml:"desc" json:"desc" json:"desc,omitempty" xml:"desc"`
-	Function string  `yaml:"function" json:"function" json:"function,omitempty" xml:"function"`
-	Type     string  `yaml:"type" json:"type" json:"type,omitempty" xml:"type"`
-	Method   string  `yaml:"method" json:"method,omitempty" xml:"method"`
-	Items    []Items `yaml:"items" json:"items,omitempty" xml:"items"`
+	Desc     string  `yaml:"desc"`
+	Function string  `yaml:"function"`
+	Type     string  `yaml:"type"`
+	Method   string  `yaml:"method"`
+	Priority int     `yaml:"priority"`
+	Items    []Items `yaml:"items"`
 }
-type Model struct {
-	Namespace string    `yaml:"namespace" json:"namespace,omitempty" xml:"namespace"`
-	Desc      string    `yaml:"desc" json:"desc,omitempty" xml:"desc"`
-	Filters   []Filters `yaml:"filtes" json:"filters,omitempty" xml:"filters"`
+type FilterModel struct {
+	Version   string    `yaml:"version"`
+	Namespace string    `yaml:"namespace"`
+	Desc      string    `yaml:"desc"`
+	Filters   []Filters `yaml:"filters"`
 }
 
 type Actuator struct {
