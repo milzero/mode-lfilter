@@ -2,9 +2,9 @@ package filter
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
-	"sort"
 	"sync"
+
+	"gopkg.in/yaml.v2"
 )
 
 type Type int
@@ -16,25 +16,46 @@ const (
 )
 
 type ModelContainer struct {
-	FilterModel *FilterModel `yaml:"filterModel" json:"filterModel" xml:"filterModel"`
+	FilterModel *Model `yaml:"filterModel" json:"filterModel" xml:"filterModel"`
 }
-type Items struct {
+type Item struct {
 	Key   string `yaml:"key"`
 	Value string `yaml:"value"`
 }
 type Filters struct {
-	Desc     string   `yaml:"desc"`
-	Function string   `yaml:"function"`
-	Type     string   `yaml:"type"`
-	Method   string   `yaml:"method"`
-	Priority int      `yaml:"priority"`
-	Items    []*Items `yaml:"items"`
+	Desc     string  `yaml:"desc"`
+	Function string  `yaml:"function"`
+	Type     string  `yaml:"type"`
+	Method   string  `yaml:"method"`
+	Priority int     `yaml:"priority"`
+	Items    []*Item `yaml:"items"`
 }
-type FilterModel struct {
+type Model struct {
 	Version   string     `yaml:"version"`
 	Namespace string     `yaml:"namespace"`
 	Desc      string     `yaml:"desc"`
 	Filters   []*Filters `yaml:"filters"`
+
+	priorityFilter struct {
+		priorityIndex []int
+		filters       map[int]*Filters
+	}
+}
+
+func (model *Model) createPriorityFilter() error {
+	if model.Filters == nil {
+		return fmt.Errorf("Model.Filters is nil")
+	}
+
+	for _, filter := range model.Filters {
+		if filter == nil {
+			continue
+		}
+		idx := filter.Priority
+		model.priorityFilter.priorityIndex = append(model.priorityFilter.priorityIndex, idx)
+		model.priorityFilter.filters[idx] = filter
+	}
+	return nil
 }
 
 type Actuator struct {
@@ -64,6 +85,11 @@ func (a *Actuator) Init(bytes []byte, structType Type) error {
 		err = fmt.Errorf("unkown type")
 	}
 
+	if err != nil {
+		return err
+	}
+
+	err = a.modelContainer.FilterModel.createPriorityFilter()
 	if err != nil {
 		return err
 	}
@@ -112,7 +138,10 @@ func (a *Actuator) check(container *ModelContainer) error {
 		fmt.Errorf("duplicate filter priority")
 	}
 
-	sort.Ints(priority)
+	err := a.modelContainer.FilterModel.createPriorityFilter()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
