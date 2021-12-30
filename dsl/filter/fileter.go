@@ -2,6 +2,7 @@ package filter
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
 	"gopkg.in/yaml.v2"
@@ -22,7 +23,14 @@ type Item struct {
 	Key   string `yaml:"key"`
 	Value string `yaml:"value"`
 }
-type Filters struct {
+
+const (
+	Match   string = "match"
+	Contain string = "contain"
+	Regex   string = "regex"
+)
+
+type Filter struct {
 	Desc     string  `yaml:"desc"`
 	Function string  `yaml:"function"`
 	Type     string  `yaml:"type"`
@@ -30,15 +38,35 @@ type Filters struct {
 	Priority int     `yaml:"priority"`
 	Items    []*Item `yaml:"items"`
 }
+
+func match(k1 string, k2 string) bool {
+	//string k1, k2 are equal
+	return k1 == k2
+}
+
+func contain(k1 string, k2 string) bool {
+	//string k1 contains k2
+	return strings.Contains(k1, k2)
+}
+
+func regex(regex string, k2 string) bool {
+	//string k1 contains k2
+	return strings.Contains(regex, k2)
+}
+
+func (filter *Filter) compare(matchItem string) {
+
+}
+
 type Model struct {
-	Version   string     `yaml:"version"`
-	Namespace string     `yaml:"namespace"`
-	Desc      string     `yaml:"desc"`
-	Filters   []*Filters `yaml:"filters"`
+	Version   string    `yaml:"version"`
+	Namespace string    `yaml:"namespace"`
+	Desc      string    `yaml:"desc"`
+	Filters   []*Filter `yaml:"filters"`
 
 	priorityFilter struct {
 		priorityIndex []int
-		filters       map[int]*Filters
+		filters       map[int]*Filter
 	}
 }
 
@@ -124,7 +152,7 @@ func (a *Actuator) check(container *ModelContainer) error {
 		return fmt.Errorf("modelContainer  lenght is 0")
 	}
 
-	filters := make(map[int]*Filters)
+	filters := make(map[int]*Filter)
 	var priority []int
 	for _, filter := range container.FilterModel.Filters {
 		if filter == nil {
