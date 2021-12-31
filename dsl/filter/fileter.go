@@ -2,6 +2,7 @@ package filter
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -39,24 +40,32 @@ type Filter struct {
 	Items    []*Item `yaml:"items"`
 }
 
-func match(k1 string, k2 string) bool {
+type compare struct {
+}
+
+func newCompare() *compare {
+	return &compare{}
+}
+
+func (c *compare) match(k1 string, k2 string) bool {
 	//string k1, k2 are equal
 	return k1 == k2
 }
 
-func contain(k1 string, k2 string) bool {
+func (c *compare) contain(k1 string, k2 string) bool {
 	//string k1 contains k2
 	return strings.Contains(k1, k2)
 }
 
-func regex(regex string, k2 string) bool {
-	//string k1 contains k2
-	return strings.Contains(regex, k2)
+func (c *compare) regex(regex string, k2 string) bool {
+	match, err := regexp.MatchString(`^Golang`, k2)
+	if err != nil {
+		return false
+	}
+	return match
 }
 
-func (filter *Filter) compare(matchItem string) {
-
-}
+var c compare
 
 type Model struct {
 	Version   string    `yaml:"version"`
