@@ -6,6 +6,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/milzero/mode-lfilter/dsl/model"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -95,10 +97,20 @@ func (model *Model) createPriorityFilter() error {
 	return nil
 }
 
+func (model *Model) process(meta model.Meta) error {
+
+	return nil
+}
+
 type Actuator struct {
 	modelContainer *ModelContainer
 	isInit         bool
 	mtx            sync.Mutex
+}
+
+func (a *Actuator) Precess(meta model.Meta) error {
+	a.modelContainer.FilterModel.process()
+	return nil
 }
 
 func (a *Actuator) Init(bytes []byte, structType Type) error {

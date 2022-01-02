@@ -1,7 +1,3 @@
 package model
 
-type Model interface {
-}
-
-type Meta struct {
-}
+type Meta map[interface{}]interface{}
