@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -14,26 +13,14 @@ type MetaFromJson struct {
 	meta map[string]interface{}
 }
 
-func (m *MetaFromJson) ParseFrom(inpiut map[string]interface{}) {
+func (m *MetaFromJson) ParseFrom(dict map[string]interface{}) {
 	m.renew()
-	var value interface{}
 	meta := map[string]interface{}{}
-	for k, v := range inpiut {
+	for k, v := range dict {
 		if _, ok := m.meta[k]; ok {
-			switch val := i.(type) {
-			case int:
-				fmt.Printf("Twice %v is %v\n", v, val*2)
-			case string:
-				fmt.Printf("%q is %v bytes long\n", v, len(val))
-			default:
-				fmt.Printf("I don't know about type %T!\n", val)
-			}
+			meta[k] = v
 		}
 	}
-}
-
-func (m *MetaFromJson) ParseFromRecursion(inpiut map[string]interface{}) {
-
 }
 
 func (m MetaFromJson) renew() {
