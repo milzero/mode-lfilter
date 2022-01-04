@@ -98,7 +98,6 @@ func (model *Model) createPriorityFilter() error {
 }
 
 func (model *Model) process(meta model.Meta) error {
-
 	return nil
 }
 
@@ -109,7 +108,7 @@ type Actuator struct {
 }
 
 func (a *Actuator) Precess(meta model.Meta) error {
-	a.modelContainer.FilterModel.process()
+	a.modelContainer.FilterModel.process(meta)
 	return nil
 }
 
