@@ -17,7 +17,7 @@ func (m *MetaFromJson) ParseFrom(dict map[string]interface{}) {
 	m.renew()
 	meta := map[string]interface{}{}
 	for k, v := range dict {
-		if _, ok := m.meta[k]; ok {
+		if _, ok := m.meta[k]; !ok {
 			meta[k] = v
 		}
 	}
