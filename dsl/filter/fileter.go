@@ -2,13 +2,7 @@ package filter
 
 import (
 	"fmt"
-	"regexp"
-	"strings"
-	"sync"
-
 	"github.com/milzero/mode-lfilter/dsl/model"
-
-	"gopkg.in/yaml.v2"
 )
 
 type Type int
@@ -22,6 +16,7 @@ const (
 type ModelContainer struct {
 	FilterModel *Model `yaml:"filterModel" json:"filterModel" xml:"filterModel"`
 }
+
 type Item struct {
 	Key   string `yaml:"key"`
 	Value string `yaml:"value"`
@@ -42,33 +37,6 @@ type Filter struct {
 	Items    []*Item `yaml:"items"`
 }
 
-type compare struct {
-}
-
-func newCompare() *compare {
-	return &compare{}
-}
-
-func (c *compare) match(k1 string, k2 string) bool {
-	//string k1, k2 are equal
-	return k1 == k2
-}
-
-func (c *compare) contain(k1 string, k2 string) bool {
-	//string k1 contains k2
-	return strings.Contains(k1, k2)
-}
-
-func (c *compare) regex(regex string, k2 string) bool {
-	match, err := regexp.MatchString(`^Golang`, k2)
-	if err != nil {
-		return false
-	}
-	return match
-}
-
-var c compare
-
 type Model struct {
 	Version   string    `yaml:"version"`
 	Namespace string    `yaml:"namespace"`
@@ -86,10 +54,16 @@ func (model *Model) createPriorityFilter() error {
 		return fmt.Errorf("Model.Filters is nil")
 	}
 
+	if model.priorityFilter.filters == nil {
+		model.priorityFilter.filters = map[int]*Filter{}
+		model.priorityFilter.priorityIndex = []int{}
+	}
+
 	for _, filter := range model.Filters {
 		if filter == nil {
 			continue
 		}
+
 		idx := filter.Priority
 		model.priorityFilter.priorityIndex = append(model.priorityFilter.priorityIndex, idx)
 		model.priorityFilter.filters[idx] = filter
@@ -98,105 +72,18 @@ func (model *Model) createPriorityFilter() error {
 }
 
 func (model *Model) process(meta model.Meta) error {
-	return nil
-}
 
-type Actuator struct {
-	modelContainer *ModelContainer
-	isInit         bool
-	mtx            sync.Mutex
-}
-
-func (a *Actuator) Precess(meta model.Meta) error {
-	a.modelContainer.FilterModel.process(meta)
-	return nil
-}
-
-func (a *Actuator) Init(bytes []byte, structType Type) error {
-	a.mtx.Lock()
-	defer a.mtx.Unlock()
-
-	a.isInit = false
-	defer func() {
-		a.isInit = true
-	}()
-
-	if a.isInit {
-		return fmt.Errorf("filter have init")
-	}
-
-	var err error
-	switch structType {
-	case YAML:
-		err = a.parseYaml(bytes)
-	default:
-		err = fmt.Errorf("unkown type")
-	}
-
-	if err != nil {
-		return err
-	}
-
-	err = a.modelContainer.FilterModel.createPriorityFilter()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (a *Actuator) parseYaml(bytes []byte) error {
-	modelContainer := &ModelContainer{}
-	err := yaml.Unmarshal(bytes, modelContainer)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (a *Actuator) check(container *ModelContainer) error {
-	if container == nil {
-		return fmt.Errorf("input is nil")
-	}
-
-	if container.FilterModel == nil {
-		return fmt.Errorf("input filterModel is nil")
-	}
-
-	if container.FilterModel.Filters == nil {
-		return fmt.Errorf("input filters is nil")
-	}
-
-	filterLen := len(container.FilterModel.Filters)
-	if filterLen < 1 {
-		return fmt.Errorf("modelContainer  lenght is 0")
-	}
-
-	filters := make(map[int]*Filter)
-	var priority []int
-	for _, filter := range container.FilterModel.Filters {
-		if filter == nil {
+	metaDict := meta.GetMeta()
+	for i, _ := range model.priorityFilter.priorityIndex {
+		filter, ok := model.priorityFilter.filters[i]
+		if !ok {
 			continue
 		}
-		filters[filter.Priority] = filter
-		priority = append(priority, filter.Priority)
-	}
 
-	if len(filters) != filterLen {
-		fmt.Errorf("duplicate filter priority")
-	}
-
-	err := a.modelContainer.FilterModel.createPriorityFilter()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (a *Actuator) UpdateFilter(bytes []byte) error {
-	err := a.parseYaml(bytes)
-	if err != nil {
-		return err
+		m, ok := metaDict[filter.Type]
+		if ok {
+			fmt.Printf("%+v", m)
+		}
 	}
 	return nil
 }

@@ -1,11 +1,13 @@
 package model
 
 import (
+	"github.com/jinzhu/copier"
 	"sync"
 )
 
 type Meta interface {
 	ParseFrom(map[string]interface{})
+	GetMeta() map[string]interface{}
 }
 
 type MetaFromJson struct {
@@ -21,6 +23,8 @@ func (m *MetaFromJson) ParseFrom(dict map[string]interface{}) {
 			meta[k] = v
 		}
 	}
+
+	m.meta = meta
 }
 
 func (m MetaFromJson) renew() {
@@ -29,4 +33,14 @@ func (m MetaFromJson) renew() {
 
 	m.meta = nil
 	m.meta = map[string]interface{}{}
+}
+
+func (m MetaFromJson) GetMeta() map[string]interface{} {
+	m.mtx.Lock()
+	defer m.mtx.Unlock()
+
+	meta := map[string]interface{}{}
+	copier.Copy(&meta, &m.meta)
+
+	return meta
 }
