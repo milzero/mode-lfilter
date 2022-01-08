@@ -1,6 +1,8 @@
 package filter
 
 import (
+	"encoding/json"
+	"github.com/milzero/mode-lfilter/dsl/model"
 	"io/ioutil"
 	"log"
 	"sync"
@@ -25,7 +27,7 @@ func TestName(t *testing.T) {
 }
 
 func TestActuator_Init(t *testing.T) {
-	actuator := Actuator{
+	actuator := Actor{
 		modelContainer: &ModelContainer{},
 		isInit:         false,
 		mtx:            sync.Mutex{},
@@ -37,4 +39,47 @@ func TestActuator_Init(t *testing.T) {
 	}
 
 	actuator.Init(yamlBytes, YAML)
+}
+
+func TestActuator_Init1(t *testing.T) {
+	actuator := Actor{
+		modelContainer: &ModelContainer{},
+		isInit:         false,
+		mtx:            sync.Mutex{},
+	}
+
+	yamlBytes, err := ioutil.ReadFile("filters.yaml")
+	if err != nil {
+		log.Printf("read yaml faile: %s", err)
+	}
+
+	actuator.Init(yamlBytes, YAML)
+}
+
+func TestActuator_Precess(t *testing.T) {
+	bytes, err := ioutil.ReadFile("test.json")
+	if err != nil {
+		log.Panic("read file failed")
+	}
+
+	var m map[string]interface{}
+	err = json.Unmarshal(bytes, &m)
+	if err != nil {
+		log.Panic("unmarshal failed", err)
+	}
+
+	log.Printf("unmarshal %+v", m)
+
+	var mm model.Meta = &model.MetaFromJson{}
+	mm.ParseFrom(m)
+
+	a := NewActuator()
+
+	bytes, err = ioutil.ReadFile("filters.yaml")
+	if err != nil {
+		log.Panic("read file failed")
+	}
+	a.Init(bytes, YAML)
+	a.Precess(mm)
+
 }
