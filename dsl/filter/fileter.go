@@ -84,7 +84,9 @@ func (model *Model) createPriorityFilter() error {
 func (model *Model) process(meta model.Meta) (map[string]interface{}, error) {
 
 	metaDict := meta.GetMeta()
-	var profile map[string]interface{}
+	profile := map[string]interface{}{}
+	c := newCompare()
+
 	for _, idx := range model.priorityFilter.priorityIndex {
 		filter, ok := model.priorityFilter.filters[idx]
 		if !ok {
@@ -92,7 +94,8 @@ func (model *Model) process(meta model.Meta) (map[string]interface{}, error) {
 			continue
 		}
 
-		functionName := filter.Function
+		methodName := filter.Method
+		c.isFunc(methodName)
 		m, ok := metaDict[filter.Type]
 		if !ok {
 			continue
@@ -103,7 +106,7 @@ func (model *Model) process(meta model.Meta) (map[string]interface{}, error) {
 			in := make([]reflect.Value, 2)
 			in[0] = reflect.ValueOf(m)
 			in[1] = reflect.ValueOf(item.Key)
-			out := reflect.ValueOf(&c).MethodByName(functionName).Call(in)
+			out := reflect.ValueOf(c).MethodByName(methodName).Call(in)
 			profile[filter.Method] = out
 		}
 	}

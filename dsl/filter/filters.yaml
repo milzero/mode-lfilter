@@ -6,7 +6,7 @@ filterModel:
         - desc: "这是一个测试"
           function: "userPix"
           type: "useId"
-          method: "match"
+          method: "Match"
           priority: 1
           items:
               - key: "123"
@@ -16,7 +16,7 @@ filterModel:
         - desc: "这是一个测试"
           function: "userPix"
           type: "device"
-          method: "match"
+          method: "Match"
           priority: 2
           items:
               - key: "123"
