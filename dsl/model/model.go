@@ -1,8 +1,10 @@
 package model
 
 import (
-	"github.com/jinzhu/copier"
 	"sync"
+
+	"github.com/jinzhu/copier"
+	"go.uber.org/zap"
 )
 
 type Meta interface {
@@ -11,11 +13,21 @@ type Meta interface {
 }
 
 type MetaFromJson struct {
-	mtx  sync.Mutex
-	meta map[string]interface{}
+	mtx    sync.Mutex
+	meta   map[string]interface{}
+	logger *zap.Logger
+}
+
+func NewMetaFromJson() *MetaFromJson {
+	return &MetaFromJson{
+		mtx:    sync.Mutex{},
+		meta:   map[string]interface{}{},
+		logger: zap.L(),
+	}
 }
 
 func (m *MetaFromJson) ParseFrom(dict map[string]interface{}) {
+	m.logger.Debug("starting to parse dick", zap.Any("dict", dict))
 	m.renew()
 	meta := map[string]interface{}{}
 	for k, v := range dict {
@@ -23,8 +35,8 @@ func (m *MetaFromJson) ParseFrom(dict map[string]interface{}) {
 			meta[k] = v
 		}
 	}
-
 	m.meta = meta
+	m.logger.Debug("finish to parse dick")
 }
 
 func (m MetaFromJson) renew() {
@@ -33,6 +45,8 @@ func (m MetaFromJson) renew() {
 
 	m.meta = nil
 	m.meta = map[string]interface{}{}
+	m.logger.Debug("renew")
+
 }
 
 func (m MetaFromJson) GetMeta() map[string]interface{} {

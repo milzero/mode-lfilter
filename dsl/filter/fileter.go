@@ -2,7 +2,10 @@ package filter
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/milzero/mode-lfilter/dsl/model"
+	"go.uber.org/zap"
 )
 
 type Type int
@@ -43,6 +46,8 @@ type Model struct {
 	Desc      string    `yaml:"desc"`
 	Filters   []*Filter `yaml:"filters"`
 
+	logger *zap.Logger
+
 	priorityFilter struct {
 		priorityIndex []int
 		filters       map[int]*Filter
@@ -50,6 +55,11 @@ type Model struct {
 }
 
 func (model *Model) createPriorityFilter() error {
+
+	if model.logger == nil {
+		model.logger = zap.L()
+	}
+
 	if model.Filters == nil {
 		return fmt.Errorf("Model.Filters is nil")
 	}
@@ -71,19 +81,31 @@ func (model *Model) createPriorityFilter() error {
 	return nil
 }
 
-func (model *Model) process(meta model.Meta) error {
+func (model *Model) process(meta model.Meta) (map[string]interface{}, error) {
 
 	metaDict := meta.GetMeta()
-	for i, _ := range model.priorityFilter.priorityIndex {
-		filter, ok := model.priorityFilter.filters[i]
+	var profile map[string]interface{}
+	for _, idx := range model.priorityFilter.priorityIndex {
+		filter, ok := model.priorityFilter.filters[idx]
+		if !ok {
+			model.logger.Warn("priority filter not found", zap.Any("idx", idx))
+			continue
+		}
+
+		functionName := filter.Function
+		m, ok := metaDict[filter.Type]
 		if !ok {
 			continue
 		}
 
-		m, ok := metaDict[filter.Type]
-		if ok {
-			fmt.Printf("%+v", m)
+		for _, item := range filter.Items {
+
+			in := make([]reflect.Value, 2)
+			in[0] = reflect.ValueOf(m)
+			in[1] = reflect.ValueOf(item.Key)
+			out := reflect.ValueOf(&c).MethodByName(functionName).Call(in)
+			profile[filter.Method] = out
 		}
 	}
-	return nil
+	return profile, nil
 }
