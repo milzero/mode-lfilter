@@ -81,6 +81,15 @@ func TestActuator_Precess(t *testing.T) {
 		log.Panic("read file failed")
 	}
 	a.Init(bytes, YAML)
-	a.Precess(mm)
+	metas, er := a.Process(mm)
+	if err != nil {
+		log.Panic(er)
+	}
 
+	bs, err := json.Marshal(metas)
+	if err != nil {
+		log.Panic(er)
+	}
+
+	log.Println(string(bs[:]))
 }

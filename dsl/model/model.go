@@ -46,7 +46,6 @@ func (m MetaFromJson) renew() {
 	m.meta = nil
 	m.meta = map[string]interface{}{}
 	m.logger.Debug("renew")
-
 }
 
 func (m MetaFromJson) GetMeta() map[string]interface{} {

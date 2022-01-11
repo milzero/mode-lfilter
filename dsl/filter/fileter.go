@@ -10,6 +10,14 @@ import (
 
 type Type int
 
+func Init() {
+	InitLog()
+}
+
+func InitLog() {
+	zap.L().Core().Enabled(zap.DebugLevel)
+}
+
 const (
 	YAML = iota
 	JSON = iota + 1
@@ -102,12 +110,20 @@ func (model *Model) process(meta model.Meta) (map[string]interface{}, error) {
 		}
 
 		for _, item := range filter.Items {
-
 			in := make([]reflect.Value, 2)
 			in[0] = reflect.ValueOf(m)
 			in[1] = reflect.ValueOf(item.Key)
 			out := reflect.ValueOf(c).MethodByName(methodName).Call(in)
-			profile[filter.Method] = out
+			if len(out) > 0 {
+				ret := out[0].Interface()
+				b, ok := ret.(bool)
+				if ok {
+					if b {
+						profile[filter.Type] = item.Value
+					}
+				}
+			}
+
 		}
 	}
 	return profile, nil

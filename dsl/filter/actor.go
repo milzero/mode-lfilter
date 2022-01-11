@@ -25,7 +25,7 @@ func NewActuator() *Actor {
 	}
 }
 
-func (a *Actor) Precess(meta model.Meta) (map[string]interface{}, error) {
+func (a *Actor) Process(meta model.Meta) (map[string]interface{}, error) {
 	profile, err := a.modelContainer.FilterModel.process(meta)
 	if err != nil {
 		return nil, err
