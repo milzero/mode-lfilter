@@ -2,13 +2,14 @@ package filter
 
 import (
 	"encoding/json"
-	"github.com/milzero/mode-lfilter/dsl/model"
 	"io/ioutil"
 	"log"
 	"sync"
 	"testing"
 
-	yaml "gopkg.in/yaml.v2"
+	"github.com/milzero/mode-lfilter/dsl/model"
+
+	"gopkg.in/yaml.v2"
 )
 
 func TestName(t *testing.T) {
@@ -70,7 +71,7 @@ func TestActuator_Precess(t *testing.T) {
 
 	log.Printf("unmarshal %+v", m)
 
-	var mm model.Meta = &model.MetaFromJson{}
+	var mm model.Meta = model.NewMetaFromJson()
 	mm.ParseFrom(m)
 
 	a := NewActuator()
@@ -80,6 +81,15 @@ func TestActuator_Precess(t *testing.T) {
 		log.Panic("read file failed")
 	}
 	a.Init(bytes, YAML)
-	a.Precess(mm)
+	metas, er := a.Process(mm)
+	if err != nil {
+		log.Panic(er)
+	}
 
+	bs, err := json.Marshal(metas)
+	if err != nil {
+		log.Panic(er)
+	}
+
+	log.Println(string(bs[:]))
 }

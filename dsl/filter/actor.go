@@ -2,10 +2,11 @@ package filter
 
 import (
 	"fmt"
+	"sync"
+
 	"github.com/milzero/mode-lfilter/dsl/model"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
-	"sync"
 )
 
 type Actor struct {
@@ -24,9 +25,12 @@ func NewActuator() *Actor {
 	}
 }
 
-func (a *Actor) Precess(meta model.Meta) error {
-	a.modelContainer.FilterModel.process(meta)
-	return nil
+func (a *Actor) Process(meta model.Meta) (map[string]interface{}, error) {
+	profile, err := a.modelContainer.FilterModel.process(meta)
+	if err != nil {
+		return nil, err
+	}
+	return profile, nil
 }
 
 func (a *Actor) Init(bytes []byte, structType Type) error {
@@ -39,6 +43,7 @@ func (a *Actor) Init(bytes []byte, structType Type) error {
 	}()
 
 	if a.isInit {
+		a.logger.Error("filter have init")
 		return fmt.Errorf("filter have init")
 	}
 
@@ -56,6 +61,7 @@ func (a *Actor) Init(bytes []byte, structType Type) error {
 
 	err = a.modelContainer.FilterModel.createPriorityFilter()
 	if err != nil {
+		a.logger.Error("create priority filter", zap.Any("err", err.Error()))
 		return err
 	}
 
@@ -66,6 +72,7 @@ func (a *Actor) parseYaml(bytes []byte) error {
 	modelContainer := &ModelContainer{}
 	err := yaml.Unmarshal(bytes, modelContainer)
 	if err != nil {
+		a.logger.Error("unmarshal yaml failed", zap.Any("err", err.Error()))
 		return err
 	}
 
@@ -75,6 +82,7 @@ func (a *Actor) parseYaml(bytes []byte) error {
 
 func (a *Actor) check(container *ModelContainer) error {
 	if container == nil {
+		a.logger.Error("input is nil")
 		return fmt.Errorf("input is nil")
 	}
 
@@ -105,7 +113,7 @@ func (a *Actor) check(container *ModelContainer) error {
 	}
 
 	if len(filters) != filterLen {
-		fmt.Errorf("duplicate filter priority")
+		return fmt.Errorf("duplicate filter priority")
 	}
 
 	err := a.modelContainer.FilterModel.createPriorityFilter()
