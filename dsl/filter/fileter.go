@@ -10,14 +10,6 @@ import (
 
 type Type int
 
-func Init() {
-	InitLog()
-}
-
-func InitLog() {
-	zap.L().Core().Enabled(zap.DebugLevel)
-}
-
 const (
 	YAML = iota
 	JSON = iota + 1
